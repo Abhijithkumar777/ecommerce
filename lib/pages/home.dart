@@ -3,6 +3,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:intertoon/pages/productdetails.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -12,7 +13,6 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-
   List productlist = [];
   List bannerList = [];
 
@@ -27,26 +27,31 @@ class _HomeState extends State<Home> {
     }
   }
 
-  List<Widget> bannerContainerList =[];
+  List<Widget> bannerContainerList = [];
 
 //API call for Banner
   Future<void> fetchBanner() async {
     var url = "http://omanphone.smsoman.com/api/configuration";
     var response = await http.get(Uri.parse(url));
     if (response.statusCode == 200) {
-
       setState(() {
         bannerList = (json.decode(response.body))['data']['slider'];
       });
-      for(int i = 0; i < bannerList.length ; i++){
-        bannerContainerList.add(
-          Container(
-            child: Image(image: NetworkImage(bannerList[i]['image']),),
-          )
-        );
+      for (int i = 0; i < bannerList.length; i++) {
+        bannerContainerList.add(Container(
+          child: Image(
+            image: NetworkImage(bannerList[i]['image']),
+          ),
+        ));
       }
-      // print(bannerList);
     }
+  }
+
+  @override
+  void initState() {
+    fetchDataFromAPI();
+    fetchBanner();
+    super.initState();
   }
 
   @override
@@ -55,6 +60,7 @@ class _HomeState extends State<Home> {
     double screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
+      resizeToAvoidBottomInset:false,
       backgroundColor: Colors.grey,
       appBar: AppBar(
         backgroundColor: Colors.red,
@@ -64,10 +70,7 @@ class _HomeState extends State<Home> {
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications),
-            onPressed: () {
-              fetchDataFromAPI();
-              fetchBanner();
-            },
+            onPressed: () {},
           )
         ],
       ),
@@ -92,7 +95,7 @@ class _HomeState extends State<Home> {
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide(
-                      width: 0, 
+                      width: 0,
                       style: BorderStyle.none,
                     ),
                   ),
@@ -123,163 +126,108 @@ class _HomeState extends State<Home> {
               itemCount: productlist.length,
               itemBuilder: (context, index) {
                 return Container(
-                  child: productlist[index]['type'] == 'banner' ?
-                  Container(
-                    child: Image(image: NetworkImage(productlist[index]['data']['file']),),
-                  ) :
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12),
-                    child: Container(
-                      width: screenWidth,
-                      color: Colors.white,
-                      child: Column(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                 productlist[index]['data']['title'],
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16
-                                  ),
-                                ),
-                                MaterialButton(
-                                  color: Colors.red,
-                                  onPressed: (){},
-                                  child: Text(
-                                    'VIEW ALL',
-                                    style: TextStyle(
-                                      color: Colors.white
+                    child: productlist[index]['type'] == 'banner'
+                        ? Container(
+                            child: Image(
+                              image: NetworkImage(
+                                  productlist[index]['data']['file']),
+                            ),
+                          )
+                        : Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8.0, vertical: 12),
+                            child: Container(
+                              width: screenWidth,
+                              color: Colors.white,
+                              child: Column(
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          productlist[index]['data']['title'],
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 16),
+                                        ),
+                                        MaterialButton(
+                                          color: Colors.red,
+                                          onPressed: () {},
+                                          child: Text(
+                                            'VIEW ALL',
+                                            style:
+                                                TextStyle(color: Colors.white),
+                                          ),
+                                        )
+                                      ],
                                     ),
                                   ),
-                                )
-                              ],
+                                  SizedBox(height: screenHeight * 0.01),
+                                  Container(
+                                      height: 250,
+                                      child: GridView.builder(
+                                          gridDelegate:
+                                              SliverGridDelegateWithFixedCrossAxisCount(
+                                                  crossAxisCount: 2),
+                                          itemCount: productlist[index]['data']
+                                                  ['items']
+                                              .length,
+                                          itemBuilder: (_, innerIndex) {
+                                            return InkWell(
+                                              onTap: () {
+                                                Navigator.of(context).push(
+                                                    MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            Productdetail()));
+                                              },
+                                              child: Container(
+                                                decoration: BoxDecoration(
+                                                    border: Border.all(
+                                                        color: Colors.grey,
+                                                        width: 0.05)),
+                                                height: screenHeight * 0.25,
+                                                // color: Colors.white,
+                                                child: Column(
+                                                  children: <Widget>[
+                                                    Container(
+                                                      height:
+                                                          screenHeight * 0.15,
+                                                      child: Image(
+                                                          image: NetworkImage("https://omanphone.smsoman.com/pub/media/catalog/product" +
+                                                              productlist[index]
+                                                                              [
+                                                                              'data']
+                                                                          [
+                                                                          'items']
+                                                                      [
+                                                                      innerIndex]
+                                                                  ['image'])),
+                                                    ),
+                                                    Text(productlist[index]
+                                                            ['data']['items']
+                                                        [innerIndex]['name']),
+                                                    Text("OMR " +
+                                                        productlist[index]['data']
+                                                                        [
+                                                                        'items']
+                                                                    [innerIndex]
+                                                                ['price']
+                                                            .toString()),
+                                                  ],
+                                                ),
+                                              ),
+                                            );
+                                          }))
+                                ],
+                              ),
                             ),
-                          ),
-                          SizedBox(height: screenHeight * 0.01),
-                          Container(
-	height: 250,
-  	child: GridView.builder(
-		gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
-		itemCount: productlist[index]['data']['items'].length,
-		itemBuilder: (_, innerIndex) {
-			return InkWell(
-				onTap: (){},
-				child: Container(
-					height: screenHeight * 0.25,
-					color: Colors.white,
-					child: Column(
-						children:<Widget>[
-							Container(
-								height: screenHeight * 0.15,
-								child: Image(image: NetworkImage("https://omanphone.smsoman.com/pub/media/catalog/product" + productlist[index]['data']['items'][innerIndex]['image'])),
-							),
-							Text(productlist[index]['data']['items'][innerIndex]['name']),
-							
-						],
-					),
-				),
-			);
-		}
-	)
-)
-                          //  Container(
-                          //    height: 250,
-                          //    child: GridView.builder(
-                          //     gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                          //         maxCrossAxisExtent: 200,
-                          //         childAspectRatio: 3 / 2,
-                          //         crossAxisSpacing: 20,
-                          //         mainAxisSpacing: 20),
-                          //     itemCount: productlist.length,
-                          //     itemBuilder: (BuildContext ctx, index) {
-                          //       return Container(
-                          //         alignment: Alignment.center,
-                          //         child: Text("Name"),
-
-                          //         // child: Text(productlist[index]["name"]),
-                          //         decoration: BoxDecoration(
-                          //             color: Colors.amber,
-                          //             borderRadius: BorderRadius.circular(15)),
-                          //       );
-                          //     }),
-                          //  ),
-                        ],
-                      ),
-                    ),
-                  )
-                    // bannerWidget(productlist[index]['data']['file']) :
-                    // productListWidget;
-                );
-                // print(productlist);
-                // productlist[index]['type'] == 'banner' ?
-                // bannerWidget(productlist[index]['data']['file']) :
-                // productListWidget;
-                
+                          ));
               },
-              ),
+            ),
           ),
-          // Expanded(
-          //   child: Padding(
-          //     padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12),
-          //     child: Container(
-          //       color: Colors.white,
-          //       // child: ListView.builder(
-          //       //   itemBuilder: (context, index) {
-          //       //     return Container(
-          //       //       // child: ,
-          //       //     );
-          //       //   }, 
-          //       //   ),
-          //     ),
-          //   ),
-          // )
-          // Container(
-          //   child: Expanded(
-          //     child: GridView.count(
-          //       crossAxisCount: 2,
-          //       //  crossAxisSpacing: 4.0,
-          //       // mainAxisSpacing: 8.0,
-          //       // children: List.generate(phonemobile.length, (index) {
-          //       //   return Center(
-          //       //     child: Text(
-          //       //         phones[0]['data']['items'][index]['name'].toString() ==
-          //       //                 ""
-          //       //             ? "Not"
-          //       //             : phones[0]['data']['items'][index]['name']
-          //       //                 .toString()
-          //       //         // style: Theme.of(context).textTheme.headline5,
-          //       //         ),
-          //       //   );
-          //       // }),
-          //     ),
-          //   ),
-          // ),
-          // SizedBox(
-          //   height: 15,
-          // ),
-          // Container(
-          //   child: Expanded(
-          //     child: GridView.count(
-          //       crossAxisCount: 2,
-          //       children: List.generate(productlist.length, (index) {
-          //         return Center(
-          //           child: Text(
-          //               phones[1]['data']['items'][index]['name'].toString() ==
-          //                       ""
-          //                   ? "Not"
-          //                   : phones[1]['data']['items'][index]['name']
-          //                       .toString()
-          //               // style: Theme.of(context).textTheme.headline5,
-          //               ),
-          //         );
-          //       }),
-          //     ),
-          //   ),
-          // )
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -309,21 +257,6 @@ class _HomeState extends State<Home> {
     );
   }
 
-  
-  // Widget productListWidget(Map products){
-  //   return Container(
-  //     height: 100,
-  //     width: 200,
-  //     color: Colors.blue,
-  //   );
-  // }
-
-  // Widget bannerWidget(String imageUrl){
-  //   return Container(
-  //     child: Image(image: NetworkImage(imageUrl),),
-
-  //   );
-  // }
   int _selectedIndex = 0;
   static const TextStyle optionStyle =
       TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
